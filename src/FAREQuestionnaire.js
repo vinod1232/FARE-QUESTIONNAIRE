@@ -97,24 +97,49 @@ const QUESTIONS = [
     ]
   },
   {
-    id: 'sufficient_food',
+    id: 'sufficient_food_5A',
     section: 5,
-    text: 'Was there sufficient food while you were in the home? Did you get enough to eat? Please indicate youth\'s response in text box',
+    subsection: 'A',
+    text: 'Was there sufficient food while you were in the home?',
     category: 'Basic Needs',
     multiSelect: true,
     options: [
-      { 
-        text: 'Yes', 
+      {
+        text: 'Yes',
         value: 'Yes',
         allowYouthComment: true,
-        requireYouthComment: true,
         allowInterviewerComment: true
       },
-      { 
-        text: 'No', 
+      {
+        text: 'No',
         value: 'No',
         potentialViolation: true,
         allowYouthComment: true,
+        requireYouthComment: true,
+        allowInterviewerComment: true
+      }
+    ]
+  },
+  {
+    id: 'sufficient_food_5B',
+    section: 5,
+    subsection: 'B',
+    text: 'Did you get enough to eat? If no, please indicate youth\s response in text box',
+    category: 'Basic Needs',
+    multiSelect: true,
+    options: [
+      {
+        text: 'Yes',
+        value: 'Yes',
+        allowYouthComment: true,
+        allowInterviewerComment: true
+      },
+      {
+        text: 'No',
+        value: 'No',
+        potentialViolation: true,
+        allowYouthComment: true,
+        requireYouthComment: true,
         allowInterviewerComment: true
       }
     ]
@@ -144,7 +169,7 @@ const QUESTIONS = [
   {
     id: 'own_bed',
     section: 7,
-    text: 'Did you have your own bed? Did anyone share a bed with you. Please indicate youth\'s response in text box',
+    text: 'Did you have your own bed? If no, please indicate youth\s response on whom occupied the bed with  them in the youth\s text box.',
     category: 'Basic Needs',
     multiSelect: true,
     options: [
@@ -160,7 +185,6 @@ const QUESTIONS = [
         value: 'No',
         potentialViolation: true,
         allowYouthComment: true,
-        requireYouthComment: true,
         allowInterviewerComment: true
       }
     ]
@@ -395,7 +419,7 @@ const QUESTIONS = [
   {
     id: 'feel_safe',
     section: 15,
-    text: 'Did you feel safe in the home? If the child answers no, interviewers shall ask additional questions to elicit additional responses. For example, if a child responds that they didn\'t feel safe, after asking why and receiving one response, the interviewer should prompt with, "Was there anything else that made you not feel safe." The prompts should continue until the child respond what makes them unsafe?',
+    text: 'Did you feel safe in the home? If the child answers no, interviewers shall ask additional questions to elicit additional responses. For example, if a child responds that they didn\'t feel safe, after asking why and receiving one response, the interviewer should prompt with, "Was there anything else that made you not feel safe." The prompts should continue until the child states what made them feel unsafe?',
     category: 'Safety and Well-being',
     multiSelect: true,
     options: [
@@ -512,7 +536,6 @@ const QUESTIONS = [
         text: 'Time Out', 
         value: 'Time Out',
         allowYouthComment: true,
-        
         allowInterviewerComment: true
       },
       { 
@@ -718,7 +741,6 @@ const QUESTIONS = [
         value: 'Yes',
         allowYouthComment: true,
         requireYouthComment: true,
-        //allowInterviewerComment: true
       },
       { 
         text: 'No', 
@@ -751,7 +773,6 @@ const QUESTIONS = [
 export default function FAREQuestionnaire() {
   const [formData, setFormData] = useState({});
   const [effectiveDate, setEffectiveDate] = useState('');
-  //const [childname, setChilldname] = useState('');
   const [description, setDescription] = useState('');
   const [interviewEnded, setInterviewEnded] = useState(false);
   const [endedReason, setEndedReason] = useState('');
@@ -763,22 +784,46 @@ export default function FAREQuestionnaire() {
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [showEndInterviewWarning, setShowEndInterviewWarning] = useState(false);
   const [caseId, setCaseId] = useState('');
-const [caseWorkerName, setCaseWorkerName] = useState('');
-const [name, setName] = useState('');
-const [assessmentDate, setAssessmentDate] = useState('');
-const [childName, setChildName] = useState('');
-const [dob, setDob] = useState('');
-const [caregiverName, setCaregiverName] = useState('');
-const [dateCompleted, setDateCompleted] = useState('');
+  const [caseWorkerName, setCaseWorkerName] = useState('');
+  const [name, setName] = useState('');
+  const [assessmentDate, setAssessmentDate] = useState('');
+  const [childName, setChildName] = useState('');
+  const [dob, setDob] = useState('');
+  const [caregiverName, setCaregiverName] = useState('');
+  const [dateCompleted, setDateCompleted] = useState('');
 
+  const [showMissedQuestionsModal, setShowMissedQuestionsModal] = useState(false);
+  const [missedQuestions, setMissedQuestions] = useState([]);
 
   const handleOptionChange = (questionId, value) => {
-    // Check if interview has already ended
-    if (interviewEnded) {
-      alert('This interview has been ended. No further changes can be made.');
-      return;
+    // Find the current question index
+    const currentQuestionIndex = QUESTIONS.findIndex(q => q.id === questionId);
+    
+    // Check if all previous questions have been answered (except if interview ended)
+    if (!interviewEnded) {
+      const unansweredQuestions = [];
+      for (let i = 0; i < currentQuestionIndex; i++) {
+        const prevQuestion = QUESTIONS[i];
+        const prevQuestionData = formData[prevQuestion.id];
+        
+        // Check if this previous question has any responses
+        if (!prevQuestionData || !prevQuestionData.responses || prevQuestionData.responses.length === 0) {
+          unansweredQuestions.push({
+            section: prevQuestion.section,
+            id: prevQuestion.id,
+            text: prevQuestion.text.length > 80 ? prevQuestion.text.substring(0, 80) + '...' : prevQuestion.text
+          });
+        }
+      }
+      
+      // If there are unanswered questions, show modal and prevent selection
+      if (unansweredQuestions.length > 0) {
+        setMissedQuestions(unansweredQuestions);
+        setShowMissedQuestionsModal(true);
+        return; // Prevent the selection
+      }
     }
-
+    
     const current = formData[questionId]?.responses || [];
     
     const isExclusiveOption = value === 'No' || value === 'Not Applicable' || value.includes('Not Applicable');
@@ -820,17 +865,49 @@ const [dateCompleted, setDateCompleted] = useState('');
       requireInterviewerComment: option.requireInterviewerComment || false
     } : {};
     
+    // Clear comments for deselected options
+    const newOptions = {...(formData[questionId]?.options || {})};
+    
+    // If we're replacing with an exclusive option, clear all previous options' comments
+    if (isExclusiveOption && !current.includes(value)) {
+      current.forEach(oldValue => {
+        if (newOptions[oldValue]) {
+          delete newOptions[oldValue];
+        }
+      });
+    }
+    
+    // If we're removing an exclusive option to add regular options, clear the exclusive option's comments
+    if (hasExclusiveOption && !isExclusiveOption) {
+      current.forEach(oldValue => {
+        if (oldValue === 'No' || oldValue === 'Not Applicable' || oldValue.includes('Not Applicable')) {
+          if (newOptions[oldValue]) {
+            delete newOptions[oldValue];
+          }
+        }
+      });
+    }
+    
+    // If unchecking this option, remove its comments
+    if (current.includes(value) && updated.length < current.length) {
+      if (newOptions[value]) {
+        delete newOptions[value];
+      }
+    }
+    
     setFormData(prev => ({
       ...prev,
       [questionId]: {
         ...prev[questionId],
         responses: updated,
         options: {
-          ...prev[questionId]?.options,
-          [value]: {
-            ...prev[questionId]?.options?.[value],
-            ...optionSettings
-          }
+          ...newOptions,
+          ...(updated.includes(value) ? {
+            [value]: {
+              ...newOptions[value],
+              ...optionSettings
+            }
+          } : {})
         }
       }
     }));
@@ -849,8 +926,16 @@ const [dateCompleted, setDateCompleted] = useState('');
       });
     }
     
-    // Check if this option ends the interview and show warning (ONLY for endInterview options)
+    // Check if this option ends the interview and END IT IMMEDIATELY
     if (optionSettings.endInterview && !current.includes(value)) {
+      // Find the question to get its details
+      const question = QUESTIONS.find(q => q.id === questionId);
+      
+      // End the interview immediately
+      setInterviewEnded(true);
+      setEndedReason(`Interview ended by rule: Question ${question.section} - Selected "${value}"`);
+      
+      // Show warning modal
       setTimeout(() => {
         setShowEndInterviewWarning(true);
       }, 100);
@@ -864,11 +949,6 @@ const [dateCompleted, setDateCompleted] = useState('');
   };
 
   const handleCheckboxChange = (questionId, optionValue, field) => {
-    if (interviewEnded) {
-      alert('This interview has been ended. No further changes can be made.');
-      return;
-    }
-    
     setFormData(prev => ({
       ...prev,
       [questionId]: {
@@ -886,11 +966,6 @@ const [dateCompleted, setDateCompleted] = useState('');
   };
 
   const handleTextChange = (questionId, optionValue, field, value) => {
-    if (interviewEnded) {
-      alert('This interview has been ended. No further changes can be made.');
-      return;
-    }
-    
     setFormData(prev => ({
       ...prev,
       [questionId]: {
@@ -962,14 +1037,20 @@ const [dateCompleted, setDateCompleted] = useState('');
           if (optionData) {
             // Check required youth comment
             if (optionData.requireYouthComment && !optionData.youthComment?.trim()) {
-              errors[`${question.id}-${response}-youthComment`] = 
-                `Youth Comment is required for Question ${question.section}: ${response}`;
+              errors[`${question.id}-${response}-youthComment`] = {
+                message: `Youth Comment is required for Question ${question.section}: ${response}`,
+                questionId: question.id,
+                section: question.section
+              };
             }
             
             // Check required interviewer comment
             if (optionData.requireInterviewerComment && !optionData.interviewerComment?.trim()) {
-              errors[`${question.id}-${response}-interviewerComment`] = 
-                `Interviewer Comment is required for Question ${question.section}: ${response}`;
+              errors[`${question.id}-${response}-interviewerComment`] = {
+                message: `Interviewer Comment is required for Question ${question.section}: ${response}`,
+                questionId: question.id,
+                section: question.section
+              };
             }
           }
         });
@@ -977,6 +1058,34 @@ const [dateCompleted, setDateCompleted] = useState('');
     });
     
     return errors;
+  };
+
+  const scrollToQuestion = (questionId) => {
+    const element = document.getElementById(`question-${questionId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Add a highlight effect
+      element.style.transition = 'all 0.3s ease';
+      element.style.backgroundColor = '#FEF3C7';
+      element.style.boxShadow = '0 0 0 4px #FCD34D';
+      
+      setTimeout(() => {
+        element.style.backgroundColor = '';
+        element.style.boxShadow = '';
+      }, 2000);
+    }
+  };
+
+  const handleValidationModalClose = () => {
+    setShowValidationModal(false);
+    
+    // Scroll to the first question with errors
+    const firstError = Object.values(validationErrors)[0];
+    if (firstError && firstError.questionId) {
+      setTimeout(() => {
+        scrollToQuestion(firstError.questionId);
+      }, 300);
+    }
   };
 
   const checkForEndInterviewOptions = () => {
@@ -1125,158 +1234,183 @@ const [dateCompleted, setDateCompleted] = useState('');
             </div>
           </div>
           
- <div style={{ display: 'flex', flexDirection: 'column', marginTop: '12px', gap: '0' }}>
-  {/* Row 1 (3 columns) */}
-  <div className="fare-header-bottom" style={{ display: 'flex', gap: '24px', marginTop: '0' }}>
-    {/* Case ID */}
-    <div className="fare-header-info" style={{ flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
-          Case ID
-        </label>
-        <input
-          type="text"
-          value={caseId}
-          onChange={(e) => setCaseId(e.target.value)}
-          style={{
-            padding: '4px 8px',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            fontSize: '13px',
-            color: '#111827',
-            backgroundColor: 'white',
-            flex: 1,
-          }}
-          placeholder="Enter Case ID..."
-        />
-      </div>
-    </div>
+          <div style={{ display: 'flex', flexDirection: 'column', marginTop: '12px', gap: '0' }}>
+            {/* Row 1 (3 columns) */}
+            <div className="fare-header-bottom" style={{ display: 'flex', gap: '24px', marginTop: '0' }}>
+              {/* Case ID */}
+              <div className="fare-header-info" style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
+                    Case ID
+                  </label>
+                  <input
+                    type="text"
+                    value={caseId}
+                    onChange={(e) => setCaseId(e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      color: '#111827',
+                      backgroundColor: 'white',
+                      flex: 1,
+                    }}
+                    placeholder="Enter Case ID..."
+                  />
+                </div>
+              </div>
 
-    {/* Child Name */}
-    <div className="fare-header-info" style={{ flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
-          Child Name
-        </label>
-        <input
-          type="text"
-          value={childName}
-          onChange={(e) => setChildName(e.target.value)}
-          style={{
-            padding: '4px 8px',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            fontSize: '13px',
-            color: '#111827',
-            backgroundColor: 'white',
-            flex: 1,
-          }}
-          placeholder="Enter Child Name..."
-        />
-      </div>
-    </div>
+              {/* Child Name */}
+              <div className="fare-header-info" style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
+                    Child Name
+                  </label>
+                  <input
+                    type="text"
+                    value={childName}
+                    onChange={(e) => setChildName(e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      color: '#111827',
+                      backgroundColor: 'white',
+                      flex: 1,
+                    }}
+                    placeholder="Enter Child Name..."
+                  />
+                </div>
+              </div>
 
-    {/* Date of Birth */}
-    <div className="fare-header-info" style={{ flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
-          Date of Birth
-        </label>
-        <input
-          type="date"
-          value={dob}
-          onChange={(e) => setDob(e.target.value)}
-          style={{
-            padding: '4px 8px',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            fontSize: '13px',
-            color: '#111827',
-            backgroundColor: 'white',
-            flex: 1,
-          }}
-        />
-      </div>
-    </div>
-  </div>
+              {/* Date of Birth */}
+              <div className="fare-header-info" style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
+                    Date of Birth
+                  </label>
+                  <input
+                    type="date"
+                    value={dob}
+                    onChange={(e) => setDob(e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      color: '#111827',
+                      backgroundColor: 'white',
+                      flex: 1,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
 
-  {/* Row 2 (3 columns) */}
-  <div className="fare-header-bottom" style={{ display: 'flex', gap: '24px', marginTop: '0' }}>
-    {/* Caregiver’s Name */}
-    <div className="fare-header-info" style={{ flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '120px' }}>
-          Caregiver’s Name
-        </label>
-        <input
-          type="text"
-          value={caregiverName}
-          onChange={(e) => setCaregiverName(e.target.value)}
-          style={{
-            padding: '4px 8px',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            fontSize: '13px',
-            color: '#111827',
-            backgroundColor: 'white',
-            flex: 1,
-          }}
-          placeholder="Enter Caregiver Name..."
-        />
-      </div>
-    </div>
+            {/* Row 2 (3 columns) */}
+            <div className="fare-header-bottom" style={{ display: 'flex', gap: '24px', marginTop: '0' }}>
+              {/* Caregiver's Name */}
+              <div className="fare-header-info" style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '120px' }}>
+                    Caregiver's Name
+                  </label>
+                  <input
+                    type="text"
+                    value={caregiverName}
+                    onChange={(e) => setCaregiverName(e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      color: '#111827',
+                      backgroundColor: 'white',
+                      flex: 1,
+                    }}
+                    placeholder="Enter Caregiver Name..."
+                  />
+                </div>
+              </div>
 
-    {/* Case Worker’s Name */}
-    <div className="fare-header-info" style={{ flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '120px' }}>
-          Case Worker’s Name
-        </label>
-        <input
-          type="text"
-          value={caseWorkerName}
-          onChange={(e) => setCaseWorkerName(e.target.value)}
-          style={{
-            padding: '4px 8px',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            fontSize: '13px',
-            color: '#111827',
-            backgroundColor: 'white',
-            flex: 1,
-          }}
-          placeholder="Enter Case Worker Name..."
-        />
-      </div>
-    </div>
+              {/* Case Worker's Name */}
+              <div className="fare-header-info" style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '120px' }}>
+                    Case Worker's Name
+                  </label>
+                  <input
+                    type="text"
+                    value={caseWorkerName}
+                    onChange={(e) => setCaseWorkerName(e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      color: '#111827',
+                      backgroundColor: 'white',
+                      flex: 1,
+                    }}
+                    placeholder="Enter Case Worker Name..."
+                  />
+                </div>
+              </div>
 
-    {/* Date Completed */}
-    <div className="fare-header-info" style={{ flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
-          Date Completed
-        </label>
-        <input
-          type="date"
-          value={dateCompleted}
-          onChange={(e) => setDateCompleted(e.target.value)}
-          style={{
-            padding: '4px 8px',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            fontSize: '13px',
-            color: '#111827',
-            backgroundColor: 'white',
-            flex: 1,
-          }}
-        />
-      </div>
-    </div>
-  </div>
-</div>
+              {/* Date Completed */}
+              <div className="fare-header-info" style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
+                    Date Completed
+                  </label>
+                  <input
+                    type="date"
+                    value={dateCompleted}
+                    onChange={(e) => setDateCompleted(e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      color: '#111827',
+                      backgroundColor: 'white',
+                      flex: 1,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
-
-
+          {/* Interview Ended Banner */}
+          {interviewEnded && (
+            <div style={{
+              marginTop: '16px',
+              padding: '12px 16px',
+              backgroundColor: '#FEE2E2',
+              border: '2px solid #DC2626',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 22H22L12 2Z" fill="#DC2626"/>
+                <path d="M12 9V13M12 16V17" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: '#7F1D1D', marginBottom: '4px' }}>
+                  Interview Ended
+                </div>
+                <div style={{ fontSize: '13px', color: '#991B1B' }}>
+                  {endedReason}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Guide Information */}
         <div className="guide-section">
@@ -1520,20 +1654,80 @@ const [dateCompleted, setDateCompleted] = useState('');
         </div>
 
         {/* Questions */}
-        {QUESTIONS.map((question) => {
+        {QUESTIONS.map((question, questionIndex) => {
           const hasResponse = formData[question.id]?.responses?.length > 0;
           
+          // Check if any previous question (not current) ended the interview
+          let interviewEndedAtIndex = -1;
+          if (interviewEnded) {
+            for (let i = 0; i < QUESTIONS.length; i++) {
+              const q = QUESTIONS[i];
+              const qData = formData[q.id];
+              if (qData?.responses) {
+                qData.responses.forEach(response => {
+                  const optionData = qData.options?.[response];
+                  if (optionData?.endInterview) {
+                    interviewEndedAtIndex = i;
+                  }
+                });
+              }
+            }
+          }
+          
+          // Disable all questions AFTER the one that ended the interview
+          // If Question 1 (index 0) ends interview, disable from Question 2 (index 1) onwards
+          const shouldDisable = interviewEnded && interviewEndedAtIndex >= 0 && questionIndex > interviewEndedAtIndex;
+          
+          // Check if previous questions are unanswered (for locking)
+          let isLocked = false;
+          let firstUnansweredSection = null;
+          if (!interviewEnded && questionIndex > 0) {
+            for (let i = 0; i < questionIndex; i++) {
+              const prevQuestion = QUESTIONS[i];
+              const prevQuestionData = formData[prevQuestion.id];
+              
+              if (!prevQuestionData || !prevQuestionData.responses || prevQuestionData.responses.length === 0) {
+                isLocked = true;
+                if (firstUnansweredSection === null) {
+                  firstUnansweredSection = prevQuestion.section;
+                }
+              }
+            }
+          }
+          
           return (
-            <div key={question.id} className="question-card">
+            <div 
+              key={question.id}
+              id={`question-${question.id}`}
+              className="question-card"
+              style={{
+                opacity: shouldDisable ? 0.6 : (isLocked ? 0.7 : 1),
+                pointerEvents: shouldDisable ? 'none' : 'auto',
+                position: 'relative',
+                border: isLocked ? '2px solid #FCD34D' : undefined,
+                backgroundColor: isLocked ? '#FFFBEB' : undefined
+              }}
+            >
+              {shouldDisable && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(243, 244, 246, 0.5)',
+                  zIndex: 1,
+                  cursor: 'not-allowed'
+                }}></div>
+              )}
+              
               {/* Section Header */}
               <div className="section-header">
                 <div className="section-id-row">
                   <div>
                     <span className="section-id">{question.id}</span>
-                    {/* <span className="multi-select-badge">Allow Multi-select</span> */}
                   </div>
                 </div>
-                {/* <div className="section-label">Section: {question.section}</div> */}
               </div>
 
               {/* Question Content */}
@@ -1562,6 +1756,10 @@ const [dateCompleted, setDateCompleted] = useState('');
                                   checked={isSelected}
                                   onChange={() => handleOptionChange(question.id, option.value)}
                                   className="option-input"
+                                  disabled={shouldDisable}
+                                  style={{
+                                    cursor: shouldDisable ? 'not-allowed' : 'pointer'
+                                  }}
                                 />
                                 <div className="option-text-content">
                                   <span className="option-text-label">{option.text}</span>
@@ -1574,28 +1772,29 @@ const [dateCompleted, setDateCompleted] = useState('');
                           {/* Comment Fields - Only show textareas when option is selected */}
                           {isSelected && (
                             <div className="checkboxes-section">
-  {/* Warning for Potential Licensing Violation */}
-  {optionData.potentialViolation && (
-    <div className="violation-warning">
-      <svg
-        width="15"
-        height="15"
-        viewBox="0 0 20 20"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ flexShrink: 0 }}
-      >
-        <path
-          d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z"
-          fill="#0f0f0fff"
-        />
-      </svg>
-      <div>
-        <strong> Warning: Potential Licensing Violation Detected</strong>
-      </div>
-    </div>
-  )}
-            {/* Youth Comment Field - shown when Allow or Require is checked */}
+                              {/* Warning for Potential Licensing Violation */}
+                              {optionData.potentialViolation && (
+                                <div className="violation-warning">
+                                  <svg
+                                    width="15"
+                                    height="15"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    style={{ flexShrink: 0 }}
+                                  >
+                                    <path
+                                      d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z"
+                                      fill="#0f0f0fff"
+                                    />
+                                  </svg>
+                                  <div>
+                                    <strong> Warning: Potential Licensing Violation Detected</strong>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Youth Comment Field - shown when Allow or Require is checked */}
                               {(optionData.allowYouthComment || optionData.requireYouthComment) && (
                                 <div className="textarea-wrapper" style={{marginTop: optionData.potentialViolation ? '16px' : '0'}}>
                                   <label className="textarea-label">
@@ -1610,8 +1809,13 @@ const [dateCompleted, setDateCompleted] = useState('');
                                     className="textarea-input"
                                     placeholder="Youth's comments..."
                                     required={optionData.requireYouthComment}
+                                    disabled={shouldDisable}
+                                    style={{
+                                      backgroundColor: shouldDisable ? '#f3f4f6' : 'white',
+                                      cursor: shouldDisable ? 'not-allowed' : 'text'
+                                    }}
                                   />
-                                  {optionData.requireYouthComment && !optionData.youthComment?.trim() && (
+                                  {optionData.requireYouthComment && !optionData.youthComment?.trim() && !shouldDisable && (
                                     <span className="field-required-note">This field is required before proceeding</span>
                                   )}
                                 </div>
@@ -1632,8 +1836,13 @@ const [dateCompleted, setDateCompleted] = useState('');
                                     className="textarea-input"
                                     placeholder="Interviewer's observations..."
                                     required={optionData.requireInterviewerComment}
+                                    disabled={shouldDisable}
+                                    style={{
+                                      backgroundColor: shouldDisable ? '#f3f4f6' : 'white',
+                                      cursor: shouldDisable ? 'not-allowed' : 'text'
+                                    }}
                                   />
-                                  {optionData.requireInterviewerComment && !optionData.interviewerComment?.trim() && (
+                                  {optionData.requireInterviewerComment && !optionData.interviewerComment?.trim() && !shouldDisable && (
                                     <span className="field-required-note">This field is required before proceeding</span>
                                   )}
                                 </div>
@@ -1652,20 +1861,29 @@ const [dateCompleted, setDateCompleted] = useState('');
 
         {/* Footer */}
         <div className="footer-buttons">
-          <button className="btn btn-cancel" onClick={() => {
-            if (unsavedChanges) {
-              setShowUnsavedWarning(true);
-            } else {
-              window.location.reload();
-            }
-          }}>
+          <button 
+            className="btn btn-cancel" 
+            onClick={() => {
+              if (unsavedChanges) {
+                setShowUnsavedWarning(true);
+              } else {
+                window.location.reload();
+              }
+            }}
+          >
             Cancel
           </button>
-          <button onClick={handleSaveDraft} className="btn btn-draft">
+          <button 
+            onClick={handleSaveDraft} 
+            className="btn btn-draft"
+          >
             <Save size={20} />
             Save As Draft
           </button>
-          <button onClick={handleFinalize} className="btn btn-save">
+          <button 
+            onClick={handleFinalize} 
+            className="btn btn-save"
+          >
             <Save size={20} />
             Submit
           </button>
@@ -1673,7 +1891,7 @@ const [dateCompleted, setDateCompleted] = useState('');
 
         {/* Validation Modal */}
         {showValidationModal && (
-          <div className="modal-overlay" onClick={() => setShowValidationModal(false)}>
+          <div className="modal-overlay" onClick={handleValidationModalClose}>
             <div className="modal-content modal-validation" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header-error">
                 <div className="modal-icon-circle-error">
@@ -1693,14 +1911,14 @@ const [dateCompleted, setDateCompleted] = useState('');
                       <circle cx="8" cy="8" r="8" fill="#FEE2E2"/>
                       <path d="M8 4V9M8 11V12" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"/>
                     </svg>
-                    <span>{error}</span>
+                    <span>{error.message || error}</span>
                   </div>
                 ))}
               </div>
               <div className="modal-actions-center">
                 <button 
                   className="btn btn-modal-primary" 
-                  onClick={() => setShowValidationModal(false)}
+                  onClick={handleValidationModalClose}
                 >
                   Complete Required Fields
                 </button>
@@ -1793,8 +2011,129 @@ const [dateCompleted, setDateCompleted] = useState('');
             </div>
           </div>
         )}
+
+        {/* Missed Questions Modal */}
+        {showMissedQuestionsModal && (
+          <div className="modal-overlay" onClick={() => setShowMissedQuestionsModal(false)}>
+            <div className="modal-content modal-warning" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header-warning">
+                <div className="modal-icon-circle-warning">
+                  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 2C8.268 2 2 8.268 2 16C2 23.732 8.268 30 16 30C23.732 30 30 23.732 30 16C30 8.268 23.732 2 16 2ZM17.5 23H14.5V20H17.5V23ZM17.5 17H14.5V9H17.5V17Z" fill="white"/>
+                  </svg>
+                </div>
+              </div>
+              <h3 className="modal-title-warning-new">Previous Questions Not Answered</h3>
+              <p className="modal-description-center">
+                You must answer questions in order. Please complete the following {missedQuestions.length === 1 ? 'question' : 'questions'} before proceeding:
+              </p>
+              <div style={{
+                maxHeight: '300px',
+                overflowY: 'auto',
+                margin: '16px 0',
+                padding: '0 8px'
+              }}>
+                {missedQuestions.map((q, index) => (
+                  <div 
+                    key={q.id}
+                    onClick={() => {
+                      setShowMissedQuestionsModal(false);
+                      setTimeout(() => {
+                        scrollToQuestion(q.id);
+                      }, 300);
+                    }}
+                    style={{
+                      backgroundColor: '#FEF3C7',
+                      border: '1px solid #FCD34D',
+                      borderRadius: '8px',
+                      padding: '12px 16px',
+                      marginBottom: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      gap: '12px',
+                      alignItems: 'flex-start'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#FDE68A';
+                      e.currentTarget.style.transform = 'translateX(4px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#FEF3C7';
+                      e.currentTarget.style.transform = 'translateX(0)';
+                    }}
+                  >
+                    <div style={{
+                      backgroundColor: '#F59E0B',
+                      color: 'white',
+                      borderRadius: '50%',
+                      width: '28px',
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      flexShrink: 0
+                    }}>
+                      {q.section}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        color: '#92400E',
+                        marginBottom: '4px'
+                      }}>
+                        Question {q.section}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#78350F',
+                        lineHeight: '1.5'
+                      }}>
+                        {q.text}
+                      </div>
+                    </div>
+                    <svg 
+                      width="20" 
+                      height="20" 
+                      viewBox="0 0 20 20" 
+                      fill="none" 
+                      xmlns="http://www.w3.org/2000/svg"
+                      style={{ flexShrink: 0, marginTop: '4px' }}
+                    >
+                      <path d="M7 3L13 10L7 17" stroke="#92400E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                ))}
+              </div>
+              <div className="modal-actions-center">
+                <button 
+                  className="btn btn-modal-primary" 
+                  onClick={() => {
+                    setShowMissedQuestionsModal(false);
+                    setTimeout(() => {
+                      scrollToQuestion(missedQuestions[0].id);
+                    }, 300);
+                  }}
+                >
+                  Go to Question {missedQuestions[0]?.section}
+                </button>
+                <button 
+                  className="btn btn-modal-secondary" 
+                  onClick={() => setShowMissedQuestionsModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+              <p className="modal-note-center">
+                💡 Click any question above to jump directly to it
+              </p>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
     </div>
   );
 }
