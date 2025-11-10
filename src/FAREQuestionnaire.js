@@ -768,6 +768,8 @@ const [name, setName] = useState('');
 const [assessmentDate, setAssessmentDate] = useState('');
 const [childName, setChildName] = useState('');
 const [dob, setDob] = useState('');
+const [caregiverName, setCaregiverName] = useState('');
+const [dateCompleted, setDateCompleted] = useState('');
 
 
   const handleOptionChange = (questionId, value) => {
@@ -1122,33 +1124,10 @@ const [dob, setDob] = useState('');
               <div className="questionnaire-heading">Questionnaire</div>
             </div>
           </div>
-   <div style={{ display: 'flex', flexDirection: 'column', marginTop: '12px' }}>
-  {/* Row 1 */}
-  <div className="fare-header-bottom" style={{ display: 'flex', gap: '24px' }}>
-    {/* Effective Date */}
-    <div className="fare-header-info" style={{ flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
-          Effective Date
-        </label>
-        <input
-          type="text"
-          value={effectiveDate}
-          onChange={(e) => setEffectiveDate(e.target.value)}
-          style={{
-            padding: '4px 8px',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            fontSize: '13px',
-            color: '#111827',
-            backgroundColor: 'white',
-            flex: 1
-          }}
-          placeholder="MM/DD/YYYY HH:MM AM/PM"
-        />
-      </div>
-    </div>
-
+          
+ <div style={{ display: 'flex', flexDirection: 'column', marginTop: '12px', gap: '0' }}>
+  {/* Row 1 (3 columns) */}
+  <div className="fare-header-bottom" style={{ display: 'flex', gap: '24px', marginTop: '0' }}>
     {/* Case ID */}
     <div className="fare-header-info" style={{ flex: 1 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
@@ -1166,59 +1145,9 @@ const [dob, setDob] = useState('');
             fontSize: '13px',
             color: '#111827',
             backgroundColor: 'white',
-            flex: 1
+            flex: 1,
           }}
           placeholder="Enter Case ID..."
-        />
-      </div>
-    </div>
-
-    {/* Case Worker Name */}
-    <div className="fare-header-info" style={{ flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '120px' }}>
-          Case Worker Name
-        </label>
-        <input
-          type="text"
-          value={caseWorkerName}
-          onChange={(e) => setCaseWorkerName(e.target.value)}
-          style={{
-            padding: '4px 8px',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            fontSize: '13px',
-            color: '#111827',
-            backgroundColor: 'white',
-            flex: 1
-          }}
-          placeholder="Enter Case Worker Name..."
-        />
-      </div>
-    </div>
-  </div>
-
-  {/* Row 2 */}
-  <div className="fare-header-bottom" style={{ display: 'flex', gap: '24px' }}>
-    {/* Date of Assessment */}
-    <div className="fare-header-info" style={{ flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '120px' }}>
-          Date of Assessment
-        </label>
-        <input
-          type="date"
-          value={assessmentDate}
-          onChange={(e) => setAssessmentDate(e.target.value)}
-          style={{
-            padding: '4px 8px',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            fontSize: '13px',
-            color: '#111827',
-            backgroundColor: 'white',
-            flex: 1
-          }}
         />
       </div>
     </div>
@@ -1240,7 +1169,7 @@ const [dob, setDob] = useState('');
             fontSize: '13px',
             color: '#111827',
             backgroundColor: 'white',
-            flex: 1
+            flex: 1,
           }}
           placeholder="Enter Child Name..."
         />
@@ -1264,7 +1193,81 @@ const [dob, setDob] = useState('');
             fontSize: '13px',
             color: '#111827',
             backgroundColor: 'white',
-            flex: 1
+            flex: 1,
+          }}
+        />
+      </div>
+    </div>
+  </div>
+
+  {/* Row 2 (3 columns) */}
+  <div className="fare-header-bottom" style={{ display: 'flex', gap: '24px', marginTop: '0' }}>
+    {/* Caregiver’s Name */}
+    <div className="fare-header-info" style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '120px' }}>
+          Caregiver’s Name
+        </label>
+        <input
+          type="text"
+          value={caregiverName}
+          onChange={(e) => setCaregiverName(e.target.value)}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: '#111827',
+            backgroundColor: 'white',
+            flex: 1,
+          }}
+          placeholder="Enter Caregiver Name..."
+        />
+      </div>
+    </div>
+
+    {/* Case Worker’s Name */}
+    <div className="fare-header-info" style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '120px' }}>
+          Case Worker’s Name
+        </label>
+        <input
+          type="text"
+          value={caseWorkerName}
+          onChange={(e) => setCaseWorkerName(e.target.value)}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: '#111827',
+            backgroundColor: 'white',
+            flex: 1,
+          }}
+          placeholder="Enter Case Worker Name..."
+        />
+      </div>
+    </div>
+
+    {/* Date Completed */}
+    <div className="fare-header-info" style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
+          Date Completed
+        </label>
+        <input
+          type="date"
+          value={dateCompleted}
+          onChange={(e) => setDateCompleted(e.target.value)}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: '#111827',
+            backgroundColor: 'white',
+            flex: 1,
           }}
         />
       </div>
