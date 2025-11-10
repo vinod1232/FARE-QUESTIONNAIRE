@@ -461,10 +461,10 @@ body {
   gap: 12px;
   padding: 16px;
   margin-top: 16px;
-  background-color: #FEE2E2;
-  border: 2px solid #DC2626;
+  background-color: #e9e509;
+  border: 2px solid #e9ebe8;
   border-radius: 8px;
-  color: #991B1B;
+  color: #0a0a0a;
   animation: slideDown 0.3s ease-out;
 }
 
@@ -484,14 +484,14 @@ body {
   font-size: 15px;
   font-weight: 700;
   margin-bottom: 6px;
-  color: #DC2626;
+  color: #141414;
 }
 
 .violation-warning p {
   font-size: 14px;
   line-height: 1.6;
   margin: 0;
-  color: #7F1D1D;
+  color: #121312;
   font-weight: 400;
 }
 

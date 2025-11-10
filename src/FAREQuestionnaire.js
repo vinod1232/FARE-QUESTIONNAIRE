@@ -395,7 +395,7 @@ const QUESTIONS = [
   {
     id: 'feel_safe',
     section: 15,
-    text: 'Did you feel safe in the home? If the child answers no, interviewers shall ask additional questions to elicit additional responses. For example, if a child responds that they didn\'t feel safe, after asking why and receiving one response, the interviewer should prompt with, "Was there anything else that made you not feel safe." The prompts should continue until the child responds no.',
+    text: 'Did you feel safe in the home? If the child answers no, interviewers shall ask additional questions to elicit additional responses. For example, if a child responds that they didn\'t feel safe, after asking why and receiving one response, the interviewer should prompt with, "Was there anything else that made you not feel safe." The prompts should continue until the child respond what makes them unsafe?',
     category: 'Safety and Well-being',
     multiSelect: true,
     options: [
@@ -512,6 +512,7 @@ const QUESTIONS = [
         text: 'Time Out', 
         value: 'Time Out',
         allowYouthComment: true,
+        
         allowInterviewerComment: true
       },
       { 
@@ -532,6 +533,7 @@ const QUESTIONS = [
         value: 'Yelling/Shouting',
         potentialViolation: true,
         allowYouthComment: true,
+        requireYouthComment: true,
         allowInterviewerComment: true
       },
       { 
@@ -716,7 +718,7 @@ const QUESTIONS = [
         value: 'Yes',
         allowYouthComment: true,
         requireYouthComment: true,
-        allowInterviewerComment: true
+        //allowInterviewerComment: true
       },
       { 
         text: 'No', 
@@ -735,7 +737,8 @@ const QUESTIONS = [
         text: 'Yes', 
         value: 'Yes',
         potentialViolation: true,
-        allowInterviewerComment: true
+        allowInterviewerComment: true,
+        requireInterviewerComment: true
       },
       { 
         text: 'No', 
@@ -747,7 +750,8 @@ const QUESTIONS = [
 
 export default function FAREQuestionnaire() {
   const [formData, setFormData] = useState({});
-  const [effectiveDate, setEffectiveDate] = useState('12/08/2025 08:41 AM');
+  const [effectiveDate, setEffectiveDate] = useState('');
+  //const [childname, setChilldname] = useState('');
   const [description, setDescription] = useState('');
   const [interviewEnded, setInterviewEnded] = useState(false);
   const [endedReason, setEndedReason] = useState('');
@@ -758,6 +762,13 @@ export default function FAREQuestionnaire() {
   const [proceedBlocked, setProceedBlocked] = useState({});
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [showEndInterviewWarning, setShowEndInterviewWarning] = useState(false);
+  const [caseId, setCaseId] = useState('');
+const [caseWorkerName, setCaseWorkerName] = useState('');
+const [name, setName] = useState('');
+const [assessmentDate, setAssessmentDate] = useState('');
+const [childName, setChildName] = useState('');
+const [dob, setDob] = useState('');
+
 
   const handleOptionChange = (questionId, value) => {
     // Check if interview has already ended
@@ -1111,66 +1122,158 @@ export default function FAREQuestionnaire() {
               <div className="questionnaire-heading">Questionnaire</div>
             </div>
           </div>
-          <div className="fare-header-bottom">
-            <div className="fare-header-info">
-              <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px'}}>
-                <label style={{fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '90px'}}>EffectiveDate:</label>
-                <input
-                  type="text"
-                  value={effectiveDate}
-                  onChange={(e) => setEffectiveDate(e.target.value)}
-                  style={{
-                    padding: '4px 8px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '4px',
-                    fontSize: '13px',
-                    color: '#111827',
-                    backgroundColor: 'white',
-                    flex: 1
-                  }}
-                  placeholder="MM/DD/YYYY HH:MM AM/PM"
-                />
-              </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px'}}>
-                <label style={{fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '90px'}}>Description:</label>
-                <input
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  style={{
-                    padding: '4px 8px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '4px',
-                    fontSize: '13px',
-                    color: '#111827',
-                    backgroundColor: 'white',
-                    flex: 1
-                  }}
-                  placeholder="Enter description..."
-                />
-              </div>
-              <p className="fare-comment-note">Questions</p>
-            </div>
-            <div className="allow-comment-checkbox">
-              <label>Allow Comment</label>
-              <input type="checkbox" />
-            </div>
-          </div>
-        </div>
+   <div style={{ display: 'flex', flexDirection: 'column', marginTop: '12px' }}>
+  {/* Row 1 */}
+  <div className="fare-header-bottom" style={{ display: 'flex', gap: '24px' }}>
+    {/* Effective Date */}
+    <div className="fare-header-info" style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
+          Effective Date
+        </label>
+        <input
+          type="text"
+          value={effectiveDate}
+          onChange={(e) => setEffectiveDate(e.target.value)}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: '#111827',
+            backgroundColor: 'white',
+            flex: 1
+          }}
+          placeholder="MM/DD/YYYY HH:MM AM/PM"
+        />
+      </div>
+    </div>
 
-        {/* Interview Ended Banner */}
-        {interviewEnded && (
-          <div className="interview-ended-banner">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V11H13V17ZM13 9H11V7H13V9Z" fill="#DC2626"/>
-            </svg>
-            <div>
-              <strong>Interview Ended</strong>
-              <p>{endedReason}</p>
-              <p style={{fontSize: '13px', marginTop: '4px'}}>All responses have been captured. Please save or finalize this assessment.</p>
-            </div>
-          </div>
-        )}
+    {/* Case ID */}
+    <div className="fare-header-info" style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
+          Case ID
+        </label>
+        <input
+          type="text"
+          value={caseId}
+          onChange={(e) => setCaseId(e.target.value)}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: '#111827',
+            backgroundColor: 'white',
+            flex: 1
+          }}
+          placeholder="Enter Case ID..."
+        />
+      </div>
+    </div>
+
+    {/* Case Worker Name */}
+    <div className="fare-header-info" style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '120px' }}>
+          Case Worker Name
+        </label>
+        <input
+          type="text"
+          value={caseWorkerName}
+          onChange={(e) => setCaseWorkerName(e.target.value)}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: '#111827',
+            backgroundColor: 'white',
+            flex: 1
+          }}
+          placeholder="Enter Case Worker Name..."
+        />
+      </div>
+    </div>
+  </div>
+
+  {/* Row 2 */}
+  <div className="fare-header-bottom" style={{ display: 'flex', gap: '24px' }}>
+    {/* Date of Assessment */}
+    <div className="fare-header-info" style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '120px' }}>
+          Date of Assessment
+        </label>
+        <input
+          type="date"
+          value={assessmentDate}
+          onChange={(e) => setAssessmentDate(e.target.value)}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: '#111827',
+            backgroundColor: 'white',
+            flex: 1
+          }}
+        />
+      </div>
+    </div>
+
+    {/* Child Name */}
+    <div className="fare-header-info" style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
+          Child Name
+        </label>
+        <input
+          type="text"
+          value={childName}
+          onChange={(e) => setChildName(e.target.value)}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: '#111827',
+            backgroundColor: 'white',
+            flex: 1
+          }}
+          placeholder="Enter Child Name..."
+        />
+      </div>
+    </div>
+
+    {/* Date of Birth */}
+    <div className="fare-header-info" style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+        <label style={{ fontSize: '13px', color: '#111827', fontWeight: '500', minWidth: '100px' }}>
+          Date of Birth
+        </label>
+        <input
+          type="date"
+          value={dob}
+          onChange={(e) => setDob(e.target.value)}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: '#111827',
+            backgroundColor: 'white',
+            flex: 1
+          }}
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 
         {/* Guide Information */}
         <div className="guide-section">
@@ -1424,10 +1527,10 @@ export default function FAREQuestionnaire() {
                 <div className="section-id-row">
                   <div>
                     <span className="section-id">{question.id}</span>
-                    <span className="multi-select-badge">Allow Multi-select</span>
+                    {/* <span className="multi-select-badge">Allow Multi-select</span> */}
                   </div>
                 </div>
-                <div className="section-label">Section: {question.section}</div>
+                {/* <div className="section-label">Section: {question.section}</div> */}
               </div>
 
               {/* Question Content */}
@@ -1468,20 +1571,28 @@ export default function FAREQuestionnaire() {
                           {/* Comment Fields - Only show textareas when option is selected */}
                           {isSelected && (
                             <div className="checkboxes-section">
-                              {/* Warning for Potential Licensing Violation */}
-                              {optionData.potentialViolation && (
-                                <div className="violation-warning">
-                                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{flexShrink: 0}}>
-                                    <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z" fill="#DC2626"/>
-                                  </svg>
-                                  <div>
-                                    <strong>Warning: Potential Licensing Violation Detected</strong>
-                                    <p>This response may indicate a licensing violation. The interviewer must remain alert and may need to file a report to State Central Registry (SCR) consistent with mandated reporter requirements. Please document thoroughly in the comments section.</p>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Youth Comment Field - shown when Allow or Require is checked */}
+  {/* Warning for Potential Licensing Violation */}
+  {optionData.potentialViolation && (
+    <div className="violation-warning">
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ flexShrink: 0 }}
+      >
+        <path
+          d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z"
+          fill="#0f0f0fff"
+        />
+      </svg>
+      <div>
+        <strong> Warning: Potential Licensing Violation Detected</strong>
+      </div>
+    </div>
+  )}
+            {/* Youth Comment Field - shown when Allow or Require is checked */}
                               {(optionData.allowYouthComment || optionData.requireYouthComment) && (
                                 <div className="textarea-wrapper" style={{marginTop: optionData.potentialViolation ? '16px' : '0'}}>
                                   <label className="textarea-label">
@@ -1549,11 +1660,11 @@ export default function FAREQuestionnaire() {
           </button>
           <button onClick={handleSaveDraft} className="btn btn-draft">
             <Save size={20} />
-            Save Draft
+            Save As Draft
           </button>
           <button onClick={handleFinalize} className="btn btn-save">
             <Save size={20} />
-            Finalize
+            Submit
           </button>
         </div>
 
@@ -1621,7 +1732,7 @@ export default function FAREQuestionnaire() {
                     handleSaveDraft();
                   }}
                 >
-                  Save Draft
+                  Save  Draft
                 </button>
                 <button 
                   className="btn btn-modal-secondary" 
@@ -1680,6 +1791,7 @@ export default function FAREQuestionnaire() {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }
